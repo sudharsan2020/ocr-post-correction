@@ -30,12 +30,8 @@ def prepare_pretraining_data(src1, src2, output_folder):
     src1_all_lines = []
     src2_all_lines = []
 
-    src1_paths = sorted(glob.glob(src1 + "/*"))
-    if src2:
-        src2_paths = sorted(glob.glob(src2 + "/*"))
-    else:
-        src2_paths = src1_paths
-
+    src1_paths = sorted(glob.glob(f"{src1}/*"))
+    src2_paths = sorted(glob.glob(f"{src2}/*")) if src2 else src1_paths
     assert len(src1_paths) == len(src2_paths)
 
     for src1_file, src2_file in zip(src1_paths, src2_paths):
@@ -45,27 +41,21 @@ def prepare_pretraining_data(src1, src2, output_folder):
         src2_lines = open(src2_file, encoding="utf8").readlines()
 
         if len(src1_lines) != len(src2_lines):
-            logging.warning(
-                "WARNING: Unequal lines in: {} {}".format(src1_file, src2_file)
-            )
+            logging.warning(f"WARNING: Unequal lines in: {src1_file} {src2_file}")
             continue
 
         for src1_line, src2_line in zip(src1_lines, src2_lines):
             if (not src1_line.strip()) or (not src2_line.strip()):
-                logging.info(
-                    "WARNING: Skipping blank lines in: {} {}".format(
-                        src1_file, src2_file
-                    )
-                )
+                logging.info(f"WARNING: Skipping blank lines in: {src1_file} {src2_file}")
                 continue
             src1_all_lines.append(src1_line)
             src2_all_lines.append(src2_line)
 
-    open("{}/pretrain_src1.txt".format(output_folder), "w", encoding="utf8").write(
+    open(f"{output_folder}/pretrain_src1.txt", "w", encoding="utf8").write(
         "".join(src1_all_lines)
     )
     if src2:
-        open("{}/pretrain_src2.txt".format(output_folder), "w", encoding="utf8").write(
+        open(f"{output_folder}/pretrain_src2.txt", "w", encoding="utf8").write(
             "".join(src2_all_lines)
         )
 
@@ -88,9 +78,7 @@ def write_training_data(filenames, output_name, check):
 
         if len(src1_lines) != len(src2_lines) or len(src1_lines) != len(tgt_lines):
             logging.warning(
-                "WARNING: Unequal lines in: {} {} {}".format(
-                    src1_file, src2_file, tgt_file
-                )
+                f"WARNING: Unequal lines in: {src1_file} {src2_file} {tgt_file}"
             )
             continue
 
@@ -101,23 +89,21 @@ def write_training_data(filenames, output_name, check):
                 or (not tgt_line.strip())
             ):
                 logging.info(
-                    "WARNING: Skipping blank lines in: {} {} {}".format(
-                        src1_file, src2_file, tgt_file
-                    )
+                    f"WARNING: Skipping blank lines in: {src1_file} {src2_file} {tgt_file}"
                 )
                 continue
             src1_all_lines.append(src1_line)
             src2_all_lines.append(src2_line)
             tgt_all_lines.append(tgt_line)
 
-    open("{}src1.txt".format(output_name), "w", encoding="utf8").write(
+    open(f"{output_name}src1.txt", "w", encoding="utf8").write(
         "".join(src1_all_lines)
     )
     if check:
-        open("{}src2.txt".format(output_name), "w", encoding="utf8").write(
+        open(f"{output_name}src2.txt", "w", encoding="utf8").write(
             "".join(src2_all_lines)
         )
-    open("{}tgt.txt".format(output_name), "w", encoding="utf8").write(
+    open(f"{output_name}tgt.txt", "w", encoding="utf8").write(
         "".join(tgt_all_lines)
     )
 
@@ -128,14 +114,14 @@ def prepare_training_data(src1, src2, tgt, output_folder, training_frac):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    src1_paths = sorted(glob.glob(src1 + "/*"))
+    src1_paths = sorted(glob.glob(f"{src1}/*"))
     if src2:
         check = True
-        src2_paths = sorted(glob.glob(src2 + "/*"))
+        src2_paths = sorted(glob.glob(f"{src2}/*"))
     else:
         check = False
         src2_paths = src1_paths
-    tgt_paths = sorted(glob.glob(tgt + "/*"))
+    tgt_paths = sorted(glob.glob(f"{tgt}/*"))
 
     assert len(src1_paths) == len(src2_paths) == len(tgt_paths)
 
@@ -151,11 +137,11 @@ def prepare_training_data(src1, src2, tgt, output_folder, training_frac):
         )
         return
 
-    write_training_data(all_files[:train_idx], "{}/train_".format(output_folder), check)
+    write_training_data(all_files[:train_idx], f"{output_folder}/train_", check)
     write_training_data(
-        all_files[train_idx:dev_idx], "{}/dev_".format(output_folder), check
+        all_files[train_idx:dev_idx], f"{output_folder}/dev_", check
     )
-    write_training_data(all_files[dev_idx:], "{}/test_".format(output_folder), check)
+    write_training_data(all_files[dev_idx:], f"{output_folder}/test_", check)
 
 
 if __name__ == "__main__":
@@ -172,12 +158,12 @@ if __name__ == "__main__":
     prepare_pretraining_data(
         src1=args.unannotated_src1,
         src2=args.unannotated_src2,
-        output_folder="{}/pretraining/".format(args.output_folder),
+        output_folder=f"{args.output_folder}/pretraining/",
     )
     prepare_training_data(
         src1=args.annotated_src1,
         src2=args.annotated_src2,
         tgt=args.annotated_tgt,
-        output_folder="{}/training/".format(args.output_folder),
+        output_folder=f"{args.output_folder}/training/",
         training_frac=args.training_frac,
     )

@@ -20,7 +20,7 @@ def create_vocab(filepaths):
 
 
 def save_vocab(vocab, output_folder, filename):
-    with open("{}/{}.json".format(output_folder, filename), "w", encoding="utf8") as f:
+    with open(f"{output_folder}/{filename}.json", "w", encoding="utf8") as f:
         json.dump(vocab.get_lookup(), f, indent=4)
 
 

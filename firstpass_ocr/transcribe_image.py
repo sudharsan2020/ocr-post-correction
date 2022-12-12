@@ -27,8 +27,7 @@ class OCR:
         with io.open(image_path, "rb") as image_file:
             content = image_file.read()
         image = vision.Image(content=content)
-        response = self.client.document_text_detection(image=image)
-        return response
+        return self.client.document_text_detection(image=image)
 
     def return_full_text(self, img_path):
         response = self.detect_text(img_path)
@@ -40,22 +39,22 @@ class OCR:
         count = 0
         for page in response.full_text_annotation.pages:
             for block in page.blocks:
-                cur_block = {}
-                cur_block["bounding_box"] = []
+                cur_block = {"bounding_box": []}
                 for vertex in block.bounding_box.vertices:
                     cur_block["bounding_box"].append((vertex.x, vertex.y))
-                cur_block["lang"] = []
-                for lang in block.property.detected_languages:
-                    cur_block["lang"].append((lang.language_code))
+                cur_block["lang"] = [
+                    lang.language_code
+                    for lang in block.property.detected_languages
+                ]
                 cur_block["text"] = ""
                 for paragraph in block.paragraphs:
                     for word in paragraph.words:
                         for symbol in word.symbols:
                             cur_block["text"] += symbol.text
                             break_type = symbol.property.detected_break.type
-                            if break_type == 1 or break_type == 2:
+                            if break_type in [1, 2]:
                                 cur_block["text"] += " "
-                            elif break_type == 3 or break_type == 5:
+                            elif break_type in [3, 5]:
                                 cur_block["text"] += "\n"
                             elif break_type == 4:
                                 cur_block["text"] += "-\n"
@@ -109,7 +108,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.image_folder:
-        image_paths = sorted(glob.glob(args.image_folder + "/*.png"))
+        image_paths = sorted(glob.glob(f"{args.image_folder}/*.png"))
     else:
         image_paths = [args.image]
 

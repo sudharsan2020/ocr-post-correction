@@ -25,30 +25,23 @@ class Seq2SeqTester:
     def test(self, src1, src2, tgt):
         if tgt:
             data = self.datareader.read_parallel_data(self.model, src1, src2, tgt)
-            output_name = "{}_{}".format(self.output_name, src1.split("/")[-1])
+            output_name = f'{self.output_name}_{src1.split("/")[-1]}'
             cer, wer = self.metrics.get_average_cer(
                 self.model,
                 data,
-                output_file=open(
-                    "{}.output".format(output_name), "w", encoding="utf-8"
-                ),
+                output_file=open(f"{output_name}.output", "w", encoding="utf-8"),
                 write_pgens=False,
             )
-            with open("{}.metrics".format(output_name), "w") as output_file:
+            with open(f"{output_name}.metrics", "w") as output_file:
                 output_file.write("TEST CER: %0.4f\n" % (cer))
                 output_file.write("TEST WER: %0.4f\n" % (wer))
         else:
-            output_file = open(
-                "{}_{}.output".format(self.output_name, src1.split("/")[-1]),
-                "w",
-                encoding="utf8",
-            )
-            data = self.datareader.read_test_data(self.model, src1, src2)
-            for src1, src2 in data:
-                if len(src1) == 0 or len(src2) == 0:
-                    output_file.write("\n")
-                    continue
-                dy.renew_cg()
-                output, _ = self.model.generate_beam(src1, src2)
-                output_file.write(str(output) + "\n")
-            output_file.close()
+            with open(f'{self.output_name}_{src1.split("/")[-1]}.output', "w", encoding="utf8") as output_file:
+                data = self.datareader.read_test_data(self.model, src1, src2)
+                for src1, src2 in data:
+                    if len(src1) == 0 or len(src2) == 0:
+                        output_file.write("\n")
+                        continue
+                    dy.renew_cg()
+                    output, _ = self.model.generate_beam(src1, src2)
+                    output_file.write(str(output) + "\n")

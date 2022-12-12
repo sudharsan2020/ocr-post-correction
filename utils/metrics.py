@@ -18,8 +18,7 @@ import argparse
 
 class ErrorMetrics:
     def preprocess(self, text):
-        preprocessed = " ".join(text.strip().split())
-        return preprocessed
+        return " ".join(text.strip().split())
 
     def calculate_metrics(self, predicted_text, transcript):
         cer = ed.eval(predicted_text, transcript) / float(len(transcript))
@@ -55,5 +54,5 @@ if __name__ == "__main__":
 
     cer, wer = metrics.calculate_metrics("\n".join(predicted), "\n".join(transcripts))
 
-    print("CER: {}".format(cer * 100))
-    print("WER: {}".format(wer * 100))
+    print(f"CER: {cer * 100}")
+    print(f"WER: {wer * 100}")

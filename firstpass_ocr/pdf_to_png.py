@@ -8,6 +8,7 @@ LICENSE file in the root directory of this source tree.
 """
 
 
+
 from pdf2image import convert_from_path
 import argparse
 import glob
@@ -22,11 +23,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--output_folder", help="Output folder for PNG files.")
     args = parser.parse_args()
-    if args.pdf_folder:
-        pdfs = glob.glob(args.pdf_folder + "/*.pdf")
-    else:
-        pdfs = [args.pdf]
-
+    pdfs = glob.glob(f"{args.pdf_folder}/*.pdf") if args.pdf_folder else [args.pdf]
     if not os.path.exists(args.output_folder):
         os.makedirs(args.output_folder)
 
@@ -37,8 +34,8 @@ if __name__ == "__main__":
 
     for i, page in enumerate(images):
         print(i)
-        page.save("{}/{}.png".format(args.output_folder, i), "PNG")
+        page.save(f"{args.output_folder}/{i}.png", "PNG")
 
-    temp_files = glob.glob("{}/*.ppm".format(args.output_folder))
+    temp_files = glob.glob(f"{args.output_folder}/*.ppm")
     for f in temp_files:
         os.remove(f)

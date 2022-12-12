@@ -10,6 +10,7 @@ LICENSE file in the root directory of this source tree.
 """
 
 
+
 import sys
 import _dynet as dy
 import argparse
@@ -36,13 +37,13 @@ if __name__ == "__main__":
     config = SetConfig(sys.argv[1:])
 
     src1_vocab = CharVocab(
-        filepaths=None, lookup_json="{}/src1.json".format(config.args.vocab_folder)
+        filepaths=None, lookup_json=f"{config.args.vocab_folder}/src1.json"
     )
     src2_vocab = CharVocab(
-        filepaths=None, lookup_json="{}/src2.json".format(config.args.vocab_folder)
+        filepaths=None, lookup_json=f"{config.args.vocab_folder}/src2.json"
     )
     tgt_vocab = CharVocab(
-        filepaths=None, lookup_json="{}/tgt.json".format(config.args.vocab_folder)
+        filepaths=None, lookup_json=f"{config.args.vocab_folder}/tgt.json"
     )
 
     model = TwoSourceModel(

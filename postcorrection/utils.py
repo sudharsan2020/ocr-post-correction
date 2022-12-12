@@ -95,9 +95,7 @@ class CharVocab:
         return [self.char2int(c) for c in input_string]
 
     def int2str(self, input_id):
-        if input_id in self.reverse_lookup:
-            return self.reverse_lookup[input_id]
-        return -1
+        return self.reverse_lookup[input_id] if input_id in self.reverse_lookup else -1
 
     def length(self):
         return len(self.lookup)
@@ -121,8 +119,7 @@ class Hypothesis:
 
 class DataReader:
     def preprocess(self, text):
-        preprocessed = " ".join(text.strip().split())
-        return preprocessed
+        return " ".join(text.strip().split())
 
     def read_single_source_data(self, filen, vocab):
         data = []
@@ -146,9 +143,7 @@ class DataReader:
         tgt_lines = open(tgt_path, encoding="utf8").readlines()
 
         if len(src1_lines) != len(src2_lines) or len(src1_lines) != len(tgt_lines):
-            logging.info(
-                "Unequal lines in: {} {} {}".format(src1_path, src2_path, tgt_path)
-            )
+            logging.info(f"Unequal lines in: {src1_path} {src2_path} {tgt_path}")
             return []
 
         for src1_line, src2_line, tgt_line in zip(src1_lines, src2_lines, tgt_lines):

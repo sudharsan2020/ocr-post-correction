@@ -167,20 +167,18 @@ class SetConfig:
 
         if args.pretrain_only:
             filename = args.model_name
-            log_filename = output_folder + "pretrain_logs/" + filename + ".log"
-            self.model_name = output_folder + "pretrain_models/" + filename
+            log_filename = f"{output_folder}pretrain_logs/{filename}.log"
+            self.model_name = f"{output_folder}pretrain_models/{filename}"
             self.output_name = None
         elif args.testing:
             log_filename = None
-            self.output_name = (
-                output_folder + "outputs/" + args.load_model.split("/")[-1]
-            )
+            self.output_name = f"{output_folder}outputs/" + args.load_model.split("/")[-1]
             self.model_name = None
         else:
             filename = args.model_name
-            log_filename = output_folder + "train_logs/" + filename + ".log"
-            self.model_name = output_folder + "models/" + filename
-            self.output_name = output_folder + "debug_outputs/" + filename
+            log_filename = f"{output_folder}train_logs/{filename}.log"
+            self.model_name = f"{output_folder}models/{filename}"
+            self.output_name = f"{output_folder}debug_outputs/{filename}"
 
         if log_filename:
             logging.basicConfig(

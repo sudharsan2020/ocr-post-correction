@@ -25,8 +25,7 @@ from collections import defaultdict
 
 class Denoiser(object):
     def preprocess(self, text):
-        preprocessed = " ".join(text.strip().split())
-        return preprocessed
+        return " ".join(text.strip().split())
 
     def count_chars(self, predicted_text, char_counts):
         for c in predicted_text:
@@ -73,9 +72,9 @@ class Denoiser(object):
         return rules
 
     def denoise_file(self, rules, input_file, output_file):
-        with open(input_file, "r", encoding="utf8") as f, open(
-            output_file, "w", encoding="utf8"
-        ) as out:
+        with (open(input_file, "r", encoding="utf8") as f, open(
+                output_file, "w", encoding="utf8"
+            ) as out):
             for line in f:
                 line = line.strip()
                 for (rule_type, c_1, c_2), prob in rules.items():
@@ -90,12 +89,8 @@ class Denoiser(object):
                         )
                         line = "".join([rand_replace(c) for c in line])
                     elif rule_type == "insert":
-                        line = line + " "
-                        rand_insert = (
-                            lambda c: "{}{}".format(c_1, c)
-                            if random.random() < prob
-                            else c
-                        )
+                        line = f"{line} "
+                        rand_insert = lambda c: f"{c_1}{c}" if random.random() < prob else c
                         line = "".join([rand_insert(c) for c in line])
                 out.write(line.strip() + "\n")
 

@@ -121,7 +121,7 @@ class TwoSourceModel:
 
         if load_model:
             self.model.populate(load_model)
-            logging.info("Loaded model: {}".format(load_model))
+            logging.info(f"Loaded model: {load_model}")
 
         self.beam_size = beam_size
         self.best_val_cer = best_val_cer
@@ -130,8 +130,7 @@ class TwoSourceModel:
         self.model.save(self.model_file)
 
     def run_lstm(self, init_state, input_vecs):
-        out_vectors = init_state.transduce(input_vecs)
-        return out_vectors
+        return init_state.transduce(input_vecs)
 
     def embed_idx(self, idx_list, embed_lookup):
         return [embed_lookup[idx] for idx in idx_list]
@@ -141,13 +140,12 @@ class TwoSourceModel:
         fwd_vectors = self.run_lstm(fwd_lstm.initial_state(), embeds)
         bwd_vectors = self.run_lstm(bwd_lstm.initial_state(), embeds_rev)
         bwd_vectors = list(reversed(bwd_vectors))
-        vectors = [dy.concatenate(list(p)) for p in zip(fwd_vectors, bwd_vectors)]
-        return vectors
+        return [dy.concatenate(list(p)) for p in zip(fwd_vectors, bwd_vectors)]
 
     def encoder_forward(self, src1, src2):
         embedded_src1 = self.embed_idx(src1, self.src1_lookup)
         if self.single_source:
-            embedded_src2 = [dy.vecInput(EMBEDDING_DIM) for idx in src2]
+            embedded_src2 = [dy.vecInput(EMBEDDING_DIM) for _ in src2]
         else:
             embedded_src2 = self.embed_idx(src2, self.src2_lookup)
 
@@ -163,18 +161,18 @@ class TwoSourceModel:
         src2_mat = dy.concatenate_cols(encoded_src2)
         src2_w1dt = self.att2_w1 * src2_mat
 
-        if not self.single_source:
-            start = (
-                self.W_s * dy.concatenate([encoded_src1[-1], encoded_src2[-1]])
-                + self.b_s
-            )
-        else:
-            start = (
+        start = (
+            (
                 self.W_s
                 * dy.concatenate([encoded_src1[-1], dy.vecInput(2 * HIDDEN_DIM)])
                 + self.b_s
             )
-
+            if self.single_source
+            else (
+                self.W_s * dy.concatenate([encoded_src1[-1], encoded_src2[-1]])
+                + self.b_s
+            )
+        )
         last_output_embeddings = self.tgt_lookup[self.tgt_vocab.str2int(EOS)]
         c1_t = dy.vecInput(2 * HIDDEN_DIM)
         c2_t = dy.vecInput(2 * HIDDEN_DIM)
@@ -202,9 +200,7 @@ class TwoSourceModel:
         )
         gen_probs = probs * p_gen
         copy_probs = a_t * (1 - p_gen)
-        copy_probs_update = []
-        for i in gen_probs:
-            copy_probs_update.append([i])
+        copy_probs_update = [[i] for i in gen_probs]
         for char, prob in zip(src1, copy_probs):
             cur_idx = self.tgt_vocab.str2int(self.src1_vocab.int2str(char))
             if cur_idx == unk_idx:
@@ -219,9 +215,7 @@ class TwoSourceModel:
 
     def get_coverage(self, a_t, prev_coverage, training=True):
         if not self.coverage:
-            if not training:
-                return None
-            return dy.scalarInput(0), None
+            return (dy.scalarInput(0), None) if training else None
         coverage = a_t + prev_coverage
         if training:
             return (
@@ -385,7 +379,7 @@ class TwoSourceModel:
             if len(completed_list) >= self.beam_size:
                 break
 
-        if len(completed_list) == 0:
+        if not completed_list:
             sorted(hypothesis_list, key=lambda x: x.score, reverse=True)
             completed_list = [hypothesis_list[0]]
 

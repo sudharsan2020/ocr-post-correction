@@ -47,10 +47,11 @@ class Seq2SeqTrainer:
 
             for i in range(0, len(train_data), minibatch_size):
                 cur_size = min(minibatch_size, len(train_data) - i)
-                losses = []
                 dy.renew_cg()
-                for (src1, src2, tgt) in train_data[i : i + cur_size]:
-                    losses.append(self.model.get_loss(src1, src2, tgt))
+                losses = [
+                    self.model.get_loss(src1, src2, tgt)
+                    for src1, src2, tgt in train_data[i : i + cur_size]
+                ]
                 batch_loss = dy.esum(losses)
                 batch_loss.backward()
                 trainer.update()
@@ -65,20 +66,19 @@ class Seq2SeqTrainer:
                     self.model.save()
                     self.model.best_val_cer = cur_cer
                     best_val_epoch = e
-                    logging.info("Model saved at epoch: {}".format(best_val_epoch))
+                    logging.info(f"Model saved at epoch: {best_val_epoch}")
                 logging.info("VAL CER: %0.4f" % (cur_cer))
                 logging.info("VAL WER: %0.4f" % (cur_wer))
                 if cur_cer == 0:
                     logging.info("Validation CER is zero. End training.")
                     break
 
-            logging.info("--- %s seconds ---" % (time.time() - start_time))
+            logging.info(f"--- {time.time() - start_time} seconds ---")
             logging.info("\n")
 
-            if not pretrain:
-                if e - best_val_epoch > patience:
-                    logging.info("Patience reached. End training.")
-                    break
+            if not pretrain and e - best_val_epoch > patience:
+                logging.info("Patience reached. End training.")
+                break
 
     def train_model(
         self, train_src1, train_src2, train_tgt, val_src1, val_src2, val_tgt
